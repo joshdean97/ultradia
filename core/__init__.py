@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 
 from .extensions import db, migrate, cors
 from .functions import generate_ultradian_cycles
+from .models import User, UserDailyRecord, UserCycleEvent
 
 
 def create_app():
