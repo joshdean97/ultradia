@@ -1,9 +1,12 @@
 from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 
 from .extensions import db, migrate, cors
 from .functions import generate_ultradian_cycles
 from .models import User, UserDailyRecord, UserCycleEvent
 from .routes import auth, records, rhythms
+
+load_dotenv()  # Load environment variables from .env file
 
 
 def create_app():
