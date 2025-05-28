@@ -9,11 +9,11 @@ from .routes import auth, records, rhythms
 load_dotenv()  # Load environment variables from .env file
 
 
-def create_app():
+def create_app(config):
     app = Flask(__name__)
 
     # Load configuration
-    app.config.from_object("config.Config")
+    app.config.from_object(config)
     print(app.config["RUNNING"])  # Print the running message from Config
     # Initialize extensions
     db.init_app(app)
