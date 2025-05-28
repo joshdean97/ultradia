@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from .extensions import db, migrate, cors
 from .functions import generate_ultradian_cycles
 from .models import User, UserDailyRecord, UserCycleEvent
+from .routes import auth, records, rhythms
 
 
 def create_app():
@@ -15,6 +16,11 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
+
+    # initialize blueprints
+    app.register_blueprint(auth)
+    app.register_blueprint(records)
+    app.register_blueprint(rhythms)
 
     @app.route("/api/ultradian", methods=["POST"])
     def ultradian_cycles():
