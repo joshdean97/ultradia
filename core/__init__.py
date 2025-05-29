@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from .extensions import db, migrate, cors
 from .functions import generate_ultradian_cycles
 from .models import User, UserDailyRecord, UserCycleEvent
-from .routes import auth, records, rhythms
+from .routes import auth, records, rhythms, users as user_bp
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -38,6 +38,7 @@ def create_app(config=None):
     app.register_blueprint(auth)
     app.register_blueprint(records)
     app.register_blueprint(rhythms)
+    app.register_blueprint(user_bp)
 
     @app.route("/api/ultradian", methods=["POST"])
     def ultradian_cycles():

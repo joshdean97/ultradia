@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, current_user
 
 from core.extensions import db
 from core.models import User
@@ -57,7 +57,16 @@ def login():
     if user and check_password_hash(user.password_hash, password):
         login_user(user)
         # Optionally, you can set a session or token here
-        return jsonify({"message": "Login successful", "user_id": user.id}), 200
+        return (
+            jsonify(
+                {
+                    "message": "Login successful",
+                    "user_id": user.id,
+                    "current_user": current_user.name,
+                }
+            ),
+            200,
+        )
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
