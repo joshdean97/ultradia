@@ -1,7 +1,8 @@
 from .extensions import db
+from flask_login import UserMixin
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     """User model for the application"""
 
     id = db.Column(db.Integer, primary_key=True)

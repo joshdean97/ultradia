@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import login_user, logout_user
 
 from core.extensions import db
 from core.models import User
@@ -32,11 +33,37 @@ def register():
     password = generate_password_hash(data.get("password"))
     name = data.get("name", "User")
 
+    # add more complex validation as needed
+
     if not email or not password:
         return jsonify({"error": "Username and password are required"}), 400
 
-    # Here you would typically hash the password and save the user to the database
     new_user = User(email=email, password_hash=password, name=name)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User registered successfully"}), 201
+
+
+@auth.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    email = data.get("email")
+    password = data.get("password")
+
+    user = User.query.filter_by(email=email).first()
+    if user and check_password_hash(user.password_hash, password):
+        login_user(user)
+        # Optionally, you can set a session or token here
+        return jsonify({"message": "Login successful", "user_id": user.id}), 200
+    else:
+        return jsonify({"error": "Invalid credentials"}), 401
+
+
+@auth.route("/logout", methods=["POST"])
+def logout():
+    logout_user()
+    # Optionally, you can clear session or token here
+    return jsonify({"message": "Logout successful"}), 200
