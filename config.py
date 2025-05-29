@@ -23,7 +23,7 @@ class DevelopmentConfig(Config):
 
     DEBUG = True
     FLASK_ENV = "development"
-    SQLALCHEMY_DATABASE_URI = os.getenv("DEV_DB_URI", "sqlite:///dev_site.db")
+    SQLALCHEMY_DATABASE_URI = os.getenv("DB_URI", "sqlite:///dev_site.db")
     RUNNING = "Development Config is running"
 
 
