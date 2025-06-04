@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 
+from flask_login import login_required, current_user
+
 from core.extensions import db
 from core.models import UserDailyRecord
 
@@ -34,13 +36,9 @@ class UserDailyRecord(db.Model):
 """
 
 
-@records.route("/", methods=["GET"])
-def records_status():
-    return jsonify({"endpoint": "records"}), 200
-
-
-@records.route("<user_id>/", methods=["POST"])
-def create_record(user_id):
+@records.route("/", methods=["POST"])
+@login_required
+def create_record():
     """
     Creates a new daily record for a user.
 
@@ -66,7 +64,7 @@ def create_record(user_id):
     formatted_wake_time = (
         datetime.strptime(wake_time, "%H:%M:%S").time() if wake_time else None
     )
-    user_id = user_id
+    user_id = current_user.id
     hrv = data.get("hrv", None)
 
     new_record = UserDailyRecord(
@@ -88,18 +86,15 @@ def create_record(user_id):
     )
 
 
-@records.route("<user_id>/", methods=["GET"])
-def get_records(user_id):
+@records.route("/", methods=["GET"])
+def get_records():
     """
     Retrieves all daily records for a user.
-
-    Args:
-        user_id (int): The ID of the user whose records are being retrieved.
 
     Returns:
         Response: A JSON response containing the user's daily records or an error message.
     """
-    records = UserDailyRecord.query.filter_by(user_id=user_id).all()
+    records = UserDailyRecord.query.filter_by(user_id=current_user.id).all()
     if not records:
         return jsonify({"message": "No records found"}), 404
 
@@ -115,19 +110,20 @@ def get_records(user_id):
     return jsonify({"records": records_data}), 200
 
 
-@records.route("<user_id>/<record_id>", methods=["GET"])
-def get_record_by_id(user_id, record_id):
+@records.route("/<record_id>", methods=["GET"])
+def get_record_by_id(record_id):
     """
     Retrieves a specific daily record by its ID for a user.
 
     Args:
-        user_id (int): The ID of the user.
         record_id (int): The ID of the daily record.
 
     Returns:
         Response: A JSON response containing the record data or an error message.
     """
-    record = UserDailyRecord.query.filter_by(user_id=user_id, id=record_id).first()
+    record = UserDailyRecord.query.filter_by(
+        user_id=current_user.id, id=record_id
+    ).first()
     if not record:
         return jsonify({"error": "Record not found"}), 404
 
@@ -140,13 +136,12 @@ def get_record_by_id(user_id, record_id):
     return jsonify({"record": record_data}), 200
 
 
-@records.route("<user_id>/<record_id>", methods=["PUT"])
-def update_record(user_id, record_id):
+@records.route("/<record_id>", methods=["PUT"])
+def update_record(record_id):
     """
     Updates a specific daily record by its ID for a user.
 
     Args:
-        user_id (int): The ID of the user.
         record_id (int): The ID of the daily record.
 
     Returns:
@@ -156,7 +151,9 @@ def update_record(user_id, record_id):
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    record = UserDailyRecord.query.filter_by(user_id=user_id, id=record_id).first()
+    record = UserDailyRecord.query.filter_by(
+        user_id=current_user.id, id=record_id
+    ).first()
     if not record:
         return jsonify({"error": "Record not found"}), 404
 
@@ -171,8 +168,8 @@ def update_record(user_id, record_id):
     return jsonify({"message": "Record updated successfully"}), 200
 
 
-@records.route("<user_id>/<record_id>", methods=["DELETE"])
-def delete_record(user_id, record_id):
+@records.route("/<record_id>", methods=["DELETE"])
+def delete_record(record_id):
     """
     Deletes a specific daily record by its ID for a user.
 
@@ -183,7 +180,9 @@ def delete_record(user_id, record_id):
     Returns:
         Response: A JSON response indicating success or failure.
     """
-    record = UserDailyRecord.query.filter_by(user_id=user_id, id=record_id).first()
+    record = UserDailyRecord.query.filter_by(
+        user_id=current_user.id, id=record_id
+    ).first()
     if not record:
         return jsonify({"error": "Record not found"}), 404
 
