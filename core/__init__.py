@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, login_required
 from dotenv import load_dotenv
 
 
@@ -40,13 +40,30 @@ def create_app(config=None):
     app.register_blueprint(rhythms)
     app.register_blueprint(user_bp)
 
-    @app.route("/api/ultradian", methods=["POST"])
-    def ultradian_cycles():
-        wake_time = request.json.get("wake_time", "06:00:00")
-        peak = int(request.json.get("peak", 90))
-        trough = int(request.json.get("trough", 20))
-        count = int(request.json.get("cycles", 5))
-        grog = int(request.json.get("grog", 20))
+    @app.route("/api/health", methods=["GET"])
+    def status():
+        return jsonify({"status": "running"}), 200
+
+    @app.route("/api/<user_id>/ultradian", methods=["POST"])
+    def ultradian_cycles(user_id):
+        user = User.query.get(int(user_id))
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Get latest record
+        latest_record = (
+            UserDailyRecord.query.filter_by(user_id=user.id)
+            .order_by(UserDailyRecord.date.desc())
+            .first()
+        )
+        if not latest_record or not latest_record.wake_time:
+            return jsonify({"error": "Wake time not found"}), 400
+
+        wake_time = latest_record.wake_time.strftime("%H:%M:%S")
+        peak = user.peak_duration
+        trough = user.trough_duration
+        count = user.cycles
+        grog = user.morning_grog
 
         try:
             cycles = generate_ultradian_cycles(wake_time, peak, trough, count, grog)
