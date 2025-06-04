@@ -1,4 +1,4 @@
 from .auth import auth
 from .records import records
-from .rhythms import rhythms
+from .cycles import cycles
 from .users import users

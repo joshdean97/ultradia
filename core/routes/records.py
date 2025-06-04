@@ -42,9 +42,6 @@ def create_record():
     """
     Creates a new daily record for a user.
 
-    Args:
-        user_id (int): The ID of the user for whom the record is being created.
-
     Returns:
         Response: A JSON response indicating success or failure, along with relevant data or error messages.
     """
@@ -52,23 +49,21 @@ def create_record():
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
-    required_fields = ["date", "wake_time"]
+    required_fields = ["wake_time"]
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
     hrv = data.get("hrv", None)
-    date = data.get("date")
-    formatted_date = datetime.strptime(date, "%Y-%m-%d").date() if date else None
+    date = datetime.now().date()  # Use current date for the record
     wake_time = data.get("wake_time")
     formatted_wake_time = (
         datetime.strptime(wake_time, "%H:%M:%S").time() if wake_time else None
     )
     user_id = current_user.id
-    hrv = data.get("hrv", None)
 
     new_record = UserDailyRecord(
-        user_id=user_id, date=formatted_date, wake_time=formatted_wake_time, hrv=hrv
+        user_id=user_id, date=date, wake_time=formatted_wake_time, hrv=hrv
     )
     db.session.add(new_record)
     try:
@@ -76,12 +71,8 @@ def create_record():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
-    sanitized_data = {
-        key: data[key] for key in ["date", "wake_time", "hrv"] if key in data
-    }
     return (
-        jsonify({"message": "Record created successfully", "data": sanitized_data}),
+        jsonify({"message": "Record created successfully", "data": data}),
         201,
     )
 
@@ -169,6 +160,7 @@ def update_record(record_id):
 
 
 @records.route("/<record_id>", methods=["DELETE"])
+@login_required
 def delete_record(record_id):
     """
     Deletes a specific daily record by its ID for a user.
@@ -187,5 +179,10 @@ def delete_record(record_id):
         return jsonify({"error": "Record not found"}), 404
 
     db.session.delete(record)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
     return jsonify({"message": "Record deleted successfully"}), 200

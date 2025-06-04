@@ -14,21 +14,32 @@ class User(UserMixin, db.Model):
     trough_duration = db.Column(db.Integer, default=20)
     cycles = db.Column(db.Integer, default=4)
 
+    daily_records = db.relationship(
+        "UserDailyRecord", backref="user", lazy=True, cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f"<User {self.name} - {self.email}>"
 
 
 class UserDailyRecord(db.Model):
+    """Daily log with wake time and optional HRV"""
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     date = db.Column(db.Date, nullable=False)
     wake_time = db.Column(db.Time, nullable=False)
-    hrv = db.Column(db.Float)  # Optional for biometrics
+    hrv = db.Column(db.Float)
 
-    user = db.relationship("User", backref=db.backref("daily_records", lazy=True))
+    cycle_events = db.relationship(
+        "UserCycleEvent",
+        backref="user_daily_record",
+        lazy=True,
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self):
-        return f"<UserDailyRecord {self.date} - Cycle {self.cycle}>"
+        return f"<UserDailyRecord {self.date}>"
 
 
 class UserCycleEvent(db.Model):
@@ -42,11 +53,5 @@ class UserCycleEvent(db.Model):
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
 
-    user_daily_record = db.relationship(
-        "UserDailyRecord", backref=db.backref("cycle_events", lazy=True)
-    )
-
     def __repr__(self):
-        return (
-            f"<UserCycleEvent {self.event_type} - {self.start_time} to {self.end_time}>"
-        )
+        return f"<UserCycleEvent {self.event_type} {self.start_time}–{self.end_time}>"
