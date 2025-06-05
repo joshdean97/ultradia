@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for
 from datetime import datetime
 
 from flask_login import login_required, current_user
@@ -72,7 +72,7 @@ def create_record():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
     return (
-        jsonify({"message": "Record created successfully", "data": data}),
+        jsonify({"message": "Record created successfully", "record_id": new_record.id}),
         201,
     )
 

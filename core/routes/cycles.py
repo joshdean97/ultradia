@@ -57,7 +57,7 @@ def get_todays_cycles():
     )
 
 
-@cycles.route("/add", methods=["POST"])
+@cycles.route("/", methods=["POST"])
 @login_required
 def add_cycle_event():
     """Add a new cycle event to today’s record."""

@@ -15,11 +15,6 @@ These endpoints are essential for managing user information and preferences.
 """
 
 
-@users.route("/", methods=["GET"])
-def users_status():
-    return {"endpoint": "users"}, 200
-
-
 @users.route("/me", methods=["GET"])
 @login_required
 def get_user_profile():
@@ -76,15 +71,15 @@ def get_user_profile_by_id(user_id):
     return jsonify(user_data), 200
 
 
-@users.route("/<user_id>", methods=["PUT"])
+@users.route("/me", methods=["PUT"])
 @login_required
-def update_user_profile(user_id):
+def update_user_profile():
     """
     Update the current user's profile.
     This endpoint should allow users to update their details such as name, email, and any other relevant information.
     """
 
-    user = User.query.get(user_id)
+    user = User.query.get(current_user.id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
@@ -102,17 +97,14 @@ def update_user_profile(user_id):
     return jsonify({"message": "User profile updated successfully"}), 200
 
 
-@users.route("/<user_id>", methods=["DELETE"])
+@users.route("/me", methods=["DELETE"])
 @login_required
-def delete_user_profile(user_id):
+def delete_user_profile():
     """
     Delete the current user's profile.
     This endpoint should allow users to delete their account.
     """
-    if current_user.id != int(user_id):
-        return jsonify({"error": "Unauthorized"}), 403
-
-    user = User.query.get(user_id)
+    user = User.query.get(current_user.id)
     if not user:
         return jsonify({"error": "User not found"}), 404
 
