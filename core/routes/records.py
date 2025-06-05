@@ -78,6 +78,7 @@ def create_record():
 
 
 @records.route("/", methods=["GET"])
+@login_required
 def get_records():
     """
     Retrieves all daily records for a user.
@@ -128,6 +129,7 @@ def get_record_by_id(record_id):
 
 
 @records.route("/<record_id>", methods=["PUT"])
+@login_required
 def update_record(record_id):
     """
     Updates a specific daily record by its ID for a user.

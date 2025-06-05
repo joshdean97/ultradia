@@ -1,0 +1,260 @@
+openapi: 3.0.3
+info:
+  title: UltraDia API
+  description: Ultradian rhythm tracking API for logging HRV, wake time, and cognitive cycle events.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+paths:
+
+  /auth/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                name:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+
+  /auth/login:
+    post:
+      summary: Log in a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+
+  /auth/logout:
+    post:
+      summary: Log out the current user
+      responses:
+        '200':
+          description: Logout successful
+
+  /users/me:
+    get:
+      summary: Get the current user's profile
+      responses:
+        '200':
+          description: User profile retrieved
+    put:
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+                peak_duration:
+                  type: integer
+                trough_duration:
+                  type: integer
+                morning_grog:
+                  type: integer
+                cycles:
+                  type: integer
+      responses:
+        '200':
+          description: Profile updated
+    delete:
+      summary: Delete current user
+      responses:
+        '200':
+          description: Profile deleted
+
+  /records:
+    get:
+      summary: Get all daily records
+      responses:
+        '200':
+          description: List of records
+    post:
+      summary: Create a new daily record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [wake_time]
+              properties:
+                wake_time:
+                  type: string
+                  example: "06:30:00"
+                hrv:
+                  type: number
+      responses:
+        '201':
+          description: Record created
+
+  /records/{record_id}:
+    get:
+      summary: Get a specific record
+      parameters:
+        - in: path
+          name: record_id
+          required: true 
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Record data
+    put:
+      summary: Update a specific record
+      parameters:
+        - in: path
+          name: record_id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                wake_time:
+                  type: string
+                hrv:
+                  type: number
+      responses:
+        '200':
+          description: Record updated
+    delete:
+      summary: Delete a specific record
+      parameters:
+        - in: path
+          name: record_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Record deleted
+
+  /cycles:
+    get:
+      summary: Get all cycle events for the user
+      responses:
+        '200':
+          description: All cycle events
+    post:
+      summary: Add a new cycle event to today
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_type, start_time, end_time]
+              properties:
+                event_type:
+                  type: string
+                  example: "peak"
+                start_time:
+                  type: string
+                  example: "09:00:00"
+                end_time:
+                  type: string
+                  example: "10:30:00"
+      responses:
+        '201':
+          description: Event added
+
+  /cycles/today:
+    get:
+      summary: Get today’s cycle events
+      responses:
+        '200':
+          description: Today’s cycle data
+
+  /ultradian:
+    get:
+      summary: Generate ultradian cycles (dry run)
+      parameters:
+        - in: query
+          name: y
+          schema:
+            type: integer
+        - in: query
+          name: m
+          schema:
+            type: integer
+        - in: query
+          name: d
+          schema:
+            type: integer
+        - in: query
+          name: peak
+          schema:
+            type: integer
+        - in: query
+          name: trough
+          schema:
+            type: integer
+        - in: query
+          name: grog
+          schema:
+            type: integer
+        - in: query
+          name: cycles
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Generated cycles
+
+    post:
+      summary: Generate and store ultradian cycles
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  example: "2025-06-04"
+                peak:
+                  type: integer
+                trough:
+                  type: integer
+                grog:
+                  type: integer
+                cycles:
+                  type: integer
+      responses:
+        '200':
+          description: Cycles generated and saved
