@@ -6,6 +6,8 @@ from flask_login import login_required, current_user
 from core.extensions import db
 from core.models import UserDailyRecord
 
+from datetime import date
+
 records = Blueprint("records", __name__, url_prefix="/api/records")
 
 """
@@ -57,9 +59,8 @@ def create_record():
     hrv = data.get("hrv", None)
     date = datetime.now().date()  # Use current date for the record
     wake_time = data.get("wake_time")
-    formatted_wake_time = (
-        datetime.strptime(wake_time, "%H:%M:%S").time() if wake_time else None
-    )
+    formatted_wake_time = datetime.strptime(wake_time, "%H:%M").time()
+
     user_id = current_user.id
 
     new_record = UserDailyRecord(
@@ -188,3 +189,24 @@ def delete_record(record_id):
         return jsonify({"error": str(e)}), 500
 
     return jsonify({"message": "Record deleted successfully"}), 200
+
+
+@records.route("/today", methods=["GET"])
+@login_required
+def get_today_record():
+    today = date.today()
+    record = UserDailyRecord.query.filter_by(
+        user_id=current_user.id, date=today
+    ).first()
+    if record:
+        return (
+            jsonify(
+                {
+                    "wake_time": record.wake_time.strftime("%H:%M"),
+                    "hrv": record.hrv,
+                    "record_id": record.id,
+                }
+            ),
+            200,
+        )
+    return jsonify({"message": "No record found"}), 404
