@@ -30,13 +30,15 @@ def register():
         return jsonify({"error": "No data provided"}), 400
 
     email = data.get("email")
-    password = generate_password_hash(data.get("password"))
+    raw_password = data.get("password")
     name = data.get("name", "User")
 
     # add more complex validation as needed
 
-    if not email or not password:
+    if not email or not raw_password:
         return jsonify({"error": "Username and password are required"}), 400
+
+    password = generate_password_hash(raw_password)
 
     new_user = User(email=email, password_hash=password, name=name)
     db.session.add(new_user)
