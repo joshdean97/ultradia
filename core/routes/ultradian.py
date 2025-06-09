@@ -80,7 +80,7 @@ def get_ultradian_cycles():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
-@ultradian.route("/", methods=["POST"])
+@ultradian.route("/", methods=["POST", "OPTIONS"])
 @login_required
 def ultradian_cycles():
     today = request.json.get("date", date.today())

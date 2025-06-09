@@ -36,11 +36,15 @@ def create_app(config=None):
     migrate.init_app(app, db)
     cors.init_app(
         app,
-        resources={r"/api/*": {"origins": "http://localhost:5173"}},
+        resources={r"/api/*": {"origins": "http://localhost:3000"}},
         supports_credentials=True,
     )
     login_manager = LoginManager()
     login_manager.init_app(app)
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return jsonify({"error": "Unauthorized"}), 401
 
     @login_manager.user_loader
     def load_user(user_id):

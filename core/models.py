@@ -18,6 +18,38 @@ class User(UserMixin, db.Model):
         "UserDailyRecord", backref="user", lazy=True, cascade="all, delete-orphan"
     )
 
+    def calculate_vital_index(self):
+        records = (
+            UserDailyRecord.query.filter_by(user_id=self.id)
+            .filter(UserDailyRecord.hrv.isnot(None))
+            .order_by(UserDailyRecord.date.desc())
+            .limit(7)
+            .all()
+        )
+
+        if not records or len(records) < 2:
+            return None
+
+        today = date.today()
+        today_record = next((r for r in records if r.date == today), None)
+        if not today_record:
+            return None
+
+        recent_hrvs = [r.hrv for r in records if r.date != today]
+        baseline = sum(recent_hrvs) / len(recent_hrvs)
+        index = round((today_record.hrv / baseline) * 100, 2)
+
+        return {
+            "vital_index": index,
+            "today_hrv": today_record.hrv,
+            "baseline_hrv": round(baseline, 2),
+            "status": (
+                "above baseline"
+                if index > 100
+                else "below baseline" if index < 100 else "baseline"
+            ),
+        }
+
     def __repr__(self):
         return f"<User {self.name} - {self.email}>"
 
