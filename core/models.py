@@ -1,6 +1,8 @@
 from .extensions import db
 from flask_login import UserMixin
 
+from datetime import date
+
 
 class User(UserMixin, db.Model):
     """User model for the application"""

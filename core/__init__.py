@@ -12,6 +12,7 @@ from .routes import (
     cycles as cycles_bp,
     users as user_bp,
     ultradian as ultradian_bp,
+    vital as vital_bp,
 )
 
 from datetime import date, datetime
@@ -56,6 +57,7 @@ def create_app(config=None):
     app.register_blueprint(cycles_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(ultradian_bp)
+    app.register_blueprint(vital_bp)
 
     @app.route("/api/health", methods=["GET"])
     def status():
