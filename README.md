@@ -122,6 +122,9 @@ This backend powers the UltraDia app — a mission-driven tool to align producti
 
 MIT License. See `LICENSE` for details.
 
+## React repo
+[https://github.com/joshdean97/ultradia-react](Ultradia React)
+
 ---
 
 > Built with ❤️ by the UltraDia team.
