@@ -103,7 +103,7 @@ def get_records():
     return jsonify({"records": records_data}), 200
 
 
-@records.route("/<record_id>", methods=["GET"])
+@records.route("/<record_id>/", methods=["GET"])
 def get_record_by_id(record_id):
     """
     Retrieves a specific daily record by its ID for a user.
@@ -129,40 +129,31 @@ def get_record_by_id(record_id):
     return jsonify({"record": record_data}), 200
 
 
-@records.route("/<record_id>", methods=["PUT"])
+@records.route("/<int:record_id>/", methods=["PUT", "OPTIONS"])
 @login_required
 def update_record(record_id):
-    """
-    Updates a specific daily record by its ID for a user.
+    record = UserDailyRecord.query.get(record_id)
 
-    Args:
-        record_id (int): The ID of the daily record.
+    if not record or record.user_id != current_user.id:
+        return jsonify({"error": "Record not found or unauthorized"}), 404
 
-    Returns:
-        Response: A JSON response indicating success or failure, along with relevant data or error messages.
-    """
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
-
-    record = UserDailyRecord.query.filter_by(
-        user_id=current_user.id, id=record_id
-    ).first()
-    if not record:
-        return jsonify({"error": "Record not found"}), 404
-
-    if "date" in data:
-        record.date = datetime.strptime(data["date"], "%Y-%m-%d").date()
     if "wake_time" in data:
-        record.wake_time = datetime.strptime(data["wake_time"], "%H:%M:%S").time()
+        from datetime import datetime
+
+        try:
+            record.wake_time = datetime.strptime(data["wake_time"], "%H:%M:%S").time()
+        except ValueError:
+            record.wake_time = datetime.strptime(data["wake_time"], "%H:%M").time()
+
     if "hrv" in data:
         record.hrv = data["hrv"]
 
     db.session.commit()
-    return jsonify({"message": "Record updated successfully"}), 200
+    return jsonify({"message": "Record updated"}), 200
 
 
-@records.route("/<record_id>", methods=["DELETE"])
+@records.route("/<record_id>/", methods=["DELETE"])
 @login_required
 def delete_record(record_id):
     """
@@ -191,7 +182,7 @@ def delete_record(record_id):
     return jsonify({"message": "Record deleted successfully"}), 200
 
 
-@records.route("/today", methods=["GET"])
+@records.route("/today/", methods=["GET"])
 @login_required
 def get_today_record():
     today = date.today()
@@ -202,11 +193,12 @@ def get_today_record():
         return (
             jsonify(
                 {
-                    "wake_time": record.wake_time.strftime("%H:%M"),
+                    "id": record.id,
+                    "wake_time": record.wake_time.strftime("%H:%M:%S"),
                     "hrv": record.hrv,
-                    "record_id": record.id,
                 }
             ),
             200,
         )
-    return jsonify({"message": "No record found"}), 404
+    else:
+        return jsonify({"message": "No record found"}), 404

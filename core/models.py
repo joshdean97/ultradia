@@ -89,3 +89,8 @@ class UserCycleEvent(db.Model):
 
     def __repr__(self):
         return f"<UserCycleEvent {self.event_type} {self.start_time}–{self.end_time}>"
+
+
+class Leads(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.Integer, unique=True)

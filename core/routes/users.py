@@ -111,3 +111,24 @@ def delete_user_profile():
     db.session.delete(user)
     db.session.commit()
     return jsonify({"message": "User profile deleted successfully"}), 200
+
+
+@users.route("/<int:user_id>", methods=["PUT"])
+@login_required
+def update_user(user_id):
+    user = User.query.get(user_id)
+
+    if not user or user.id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+
+    user.name = data.get("name", user.name)
+    user.email = data.get("email", user.email)
+    user.peak_duration = data.get("peak_duration", user.peak_duration)
+    user.trough_duration = data.get("trough_duration", user.trough_duration)
+    user.grog_duration = data.get("morning_grog", user.morning_grog)
+    user.cycles = data.get("cycles", user.cycles)
+
+    db.session.commit()
+    return jsonify({"message": "Profile updated"}), 200

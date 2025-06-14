@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_login import LoginManager, current_user, login_required
 from dotenv import load_dotenv
+import csv, pathlib
 
 
 from .extensions import db, migrate, cors
 from .functions import generate_ultradian_cycles
-from .models import User, UserDailyRecord, UserCycleEvent
+from .models import User, UserDailyRecord, UserCycleEvent, Leads
 from .routes import (
     auth as auth_bp,
     records as records_bp,
@@ -15,13 +16,20 @@ from .routes import (
     vital as vital_bp,
 )
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+import requests
+import time
 
 load_dotenv()  # Load environment variables from .env file
 
 
 def create_app(config=None):
     app = Flask(__name__)
+    
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SECURE"] = False
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
+
 
     # Load configuration
     if config is None:
@@ -35,11 +43,19 @@ def create_app(config=None):
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(
-        app,
-        resources={r"/api/*": {"origins": "http://localhost:3000"}},
-        supports_credentials=True,
-    )
+    cors.init_app(app, supports_credentials=True, resources={
+        r"/api/*": {
+            "origins": [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "https://ultradia.app"
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })    
+    app.url_map.strict_slashes = False
+
     login_manager = LoginManager()
     login_manager.init_app(app)
 
@@ -62,5 +78,23 @@ def create_app(config=None):
     @app.route("/api/health", methods=["GET"])
     def status():
         return jsonify({"status": "running"}), 200
+
+    CSV_PATH = pathlib.Path("leads.csv")
+
+    @app.route("/api/leads", methods=["POST"])
+    def get_leads():
+        email = request.json.get("email", "").strip().lower()
+        name = request.json.get("name", "").strip().title()
+        ts = datetime.now().isoformat()
+
+        # make sure file exists with header once
+        if not CSV_PATH.exists():
+            CSV_PATH.write_text("email,timestamp\n")
+
+        with CSV_PATH.open("a", newline="") as f:
+            csv.writer(f).writerow([email, ts, name])
+
+        print(f"[lead] {email}")
+        return jsonify(ok=True), 200
 
     return app

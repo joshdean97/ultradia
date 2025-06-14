@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, current_user, login_required
 
@@ -55,9 +55,9 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if user and check_password_hash(user.password_hash, password):
+        session.permanent = True  # 🔥 This keeps the session cookie beyond browser close
         login_user(user)
-        print(email, password)
-        # Optionally, you can set a session or token here
+    
         return (
             jsonify(
                 {
