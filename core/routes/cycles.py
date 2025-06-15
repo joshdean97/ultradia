@@ -5,7 +5,7 @@ from datetime import date
 from core.extensions import db
 from core.models import UserDailyRecord, UserCycleEvent
 
-cycles = Blueprint("cycles", __name__, url_prefix="/api/cycles")
+cycles = Blueprint("cycles", __name__, url_prefix="/cycles")
 
 
 @cycles.route("/", methods=["GET"])

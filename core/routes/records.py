@@ -8,7 +8,7 @@ from core.models import UserDailyRecord
 
 from datetime import date
 
-records = Blueprint("records", __name__, url_prefix="/api/records")
+records = Blueprint("records", __name__, url_prefix="/records")
 
 """
 Blueprint: /api/records

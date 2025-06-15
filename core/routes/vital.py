@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify
 from flask_login import login_required, current_user
 
-vital = Blueprint("vital", __name__, url_prefix="/api/energy-potential")
+vital = Blueprint("vital", __name__, url_prefix="/energy-potential")
 
 
 @vital.route("/", methods=["GET"])

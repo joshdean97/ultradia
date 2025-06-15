@@ -5,10 +5,10 @@ from flask_login import login_user, logout_user, current_user, login_required
 from core.extensions import db
 from core.models import User
 
-auth = Blueprint("auth", __name__, url_prefix="/api/auth")
+auth = Blueprint("auth", __name__, url_prefix="/auth")
 
 """
-Blueprint: /api/auth
+Blueprint: /auth
 This module handles user authentication, including login and registration.
 Endpoints defined here are responsible for:
 - User registration

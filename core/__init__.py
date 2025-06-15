@@ -76,13 +76,13 @@ def create_app(config=None):
     app.register_blueprint(ultradian_bp)
     app.register_blueprint(vital_bp)
 
-    @app.route("/api/health", methods=["GET"])
+    @app.route("/health", methods=["GET"])
     def status():
         return jsonify({"status": "running"}), 200
 
     CSV_PATH = pathlib.Path("leads.csv")
 
-    @app.route("/api/leads", methods=["POST"])
+    @app.route("/leads", methods=["POST"])
     def get_leads():
         email = request.json.get("email", "").strip().lower()
         name = request.json.get("name", "").strip().title()

@@ -6,7 +6,7 @@ from core.extensions import db
 from core.functions import generate_ultradian_cycles
 from core.models import UserDailyRecord, UserCycleEvent
 
-ultradian = Blueprint("ultradian", __name__, url_prefix="/api/ultradian")
+ultradian = Blueprint("ultradian", __name__, url_prefix="/ultradian")
 
 
 @ultradian.route("/", methods=["GET"])
