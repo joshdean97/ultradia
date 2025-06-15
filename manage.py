@@ -4,8 +4,13 @@ from core.extensions import db
 
 from config import DevelopmentConfig
 
-app = create_app(config=DevelopmentConfig)
-cli = FlaskGroup(app)
+# Only use development config if explicitly told to
+import os
+env_config = os.getenv("FLASK_ENV", "production")
 
-if __name__ == "__main__":
-    cli()
+if env_config == "development":
+    from config import DevelopmentConfig as Config
+else:
+    from config import ProductionConfig as Config
+
+app = create_app(config=Config)

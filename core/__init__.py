@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_login import LoginManager, current_user, login_required
 from dotenv import load_dotenv
 import csv, pathlib
+import os
 
 
 from .extensions import db, migrate, cors
@@ -20,8 +21,8 @@ from datetime import date, datetime, timedelta
 import requests
 import time
 
-load_dotenv()  # Load environment variables from .env file
-
+if os.getenv("FLASK_ENV") == "development":
+    load_dotenv()
 
 def create_app(config=None):
     app = Flask(__name__)
@@ -87,14 +88,20 @@ def create_app(config=None):
         name = request.json.get("name", "").strip().title()
         ts = datetime.now().isoformat()
 
-        # make sure file exists with header once
-        if not CSV_PATH.exists():
-            CSV_PATH.write_text("email,timestamp\n")
-
-        with CSV_PATH.open("a", newline="") as f:
-            csv.writer(f).writerow([email, ts, name])
-
-        print(f"[lead] {email}")
-        return jsonify(ok=True), 200
+        new_lead = Leads(
+            email = email,
+            name = name
+        )
+        
+        db.session.add(new_lead)
+        db.session.commit()
+        
+        return jsonify(
+            {
+                "message": "Successfully added",
+                "name": name,
+                "email": email
+            }
+        ), 200
 
     return app

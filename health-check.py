@@ -3,7 +3,8 @@ import boto3
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.getenv("FLASK_ENV") == "development":
+    load_dotenv()
 
 
 def health_check(url="http://localhost:5000/api/health"):

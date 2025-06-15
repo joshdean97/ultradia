@@ -1,7 +1,7 @@
 from .extensions import db
 from flask_login import UserMixin
 
-from datetime import date
+from datetime import date, datetime
 
 
 class User(UserMixin, db.Model):
@@ -93,4 +93,6 @@ class UserCycleEvent(db.Model):
 
 class Leads(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.Integer, unique=True)
+    email = db.Column(db.String(120), unique=True)
+    name = db.Column(db.String(120))
+    timestamp = db.Column(db.DateTime, default=datetime.now())
