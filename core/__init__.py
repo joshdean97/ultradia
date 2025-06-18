@@ -21,8 +21,8 @@ from datetime import date, datetime, timedelta
 import requests
 import time
 
-if os.getenv("FLASK_ENV") == "development":
-    load_dotenv()
+# if os.getenv("FLASK_ENV") == "development":
+load_dotenv()
 
 def create_app(config=None):
     app = Flask(__name__)
@@ -39,9 +39,11 @@ def create_app(config=None):
         config = DevelopmentConfig
 
     app.config.from_object(config)
-
+    
     print(app.config["RUNNING"])  # Print the running message from Config
     # Initialize extensions
+    print("Using DB:", app.config.get("SQLALCHEMY_DATABASE_URI"))
+
     db.init_app(app)
     migrate.init_app(app, db)
     cors.init_app(app, supports_credentials=True, resources={

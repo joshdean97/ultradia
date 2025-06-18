@@ -6,7 +6,6 @@ __pycache__/
 # C extensions
 *.so
 
-.elbextensions/*
 
 *.csv
 
@@ -194,3 +193,8 @@ cython_debug/
 
 # config files
 config.py
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

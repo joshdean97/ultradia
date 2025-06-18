@@ -30,8 +30,9 @@ class ProductionConfig(Config):
     SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_APP = "application.py"
 
-    
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DB_URI")
-    URL=os.environ.get('PROD_URL')
+    if not SQLALCHEMY_DATABASE_URI:
+        raise ValueError("Missing PROD_DB_URI environment variable")
+
     DEBUG = False
     RUNNING = "Production Config is running"
