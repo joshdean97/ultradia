@@ -66,6 +66,38 @@ def create_app(config=None):
     
     @app.before_request
     def verify_origin():
+        user_agent = request.headers.get("User-Agent", "").lower()
+
+        # 🪤 Known scanners and bot agents
+        honeypot_agents = ["zgrab", "sqlmap", "nmap", "curl", "python-requests"]
+
+        if any(bot in user_agent for bot in honeypot_agents):
+            app.logger.warning(f"🕵️ Honeypot tripped by: {user_agent} from {request.remote_addr}")
+            time.sleep(3)  # Waste their time
+            return "404 Not Found: Nope. Try again, bot 🤖", 404
+
+        # Continue with legit origin protection
+        referer = request.headers.get("Referer", "")
+        header_token = request.headers.get("X-Ultra-Secret", "")
+        IS_DEV = os.getenv("FLASK_ENV") == "development"
+
+        allowed_referers = [
+            "https://ultradia.app",
+            "https://www.ultradia.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000"
+        ]
+
+        if not isinstance(referer, str) or not any(referer.startswith(origin) for origin in allowed_referers):
+            app.logger.warning(f"❌ Blocked by referer: {referer} from {request.remote_addr}")
+            abort(403)
+
+        if not IS_DEV and header_token != os.getenv("API_SHARED_SECRET"):
+            app.logger.warning(f"❌ Blocked by secret: {header_token} from {request.remote_addr}")
+            abort(403)        
+            
+    @app.before_request
+    def verify_origin():
         IS_DEV = os.getenv("FLASK_ENV") == "development"
 
         allowed_referers = [
@@ -87,7 +119,7 @@ def create_app(config=None):
 
         if not IS_DEV and header_token != API_SECRET:
             abort(403)
-            
+                
     @login_manager.unauthorized_handler
     def unauthorized():
         return jsonify({"error": "Unauthorized"}), 401
