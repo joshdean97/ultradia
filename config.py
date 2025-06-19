@@ -29,6 +29,7 @@ class ProductionConfig(Config):
     """Production configuration class."""
     SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_APP = "application.py"
+    FLASK_ENV= "development"
 
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DB_URI")
     if not SQLALCHEMY_DATABASE_URI:

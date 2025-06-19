@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_login import LoginManager, current_user, login_required
 from dotenv import load_dotenv
 import csv, pathlib
@@ -61,7 +61,33 @@ def create_app(config=None):
 
     login_manager = LoginManager()
     login_manager.init_app(app)
+    
+    API_SECRET = os.getenv("API_SHARED_SECRET")
+    
+    @app.before_request
+    def verify_origin():
+        IS_DEV = os.getenv("FLASK_ENV") == "development"
 
+        allowed_referers = [
+            "https://ultradia.app",
+            "https://www.ultradia.app",
+        ]
+
+        if IS_DEV:
+            allowed_referers += [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000"
+            ]
+            
+        referer = request.headers.get("Referer", "")
+        header_token = request.headers.get("X-Ultra-Secret", "")
+        
+        if not any(referer.startswith(origin) for origin in allowed_referers):
+            abort(403)
+
+        if not IS_DEV and header_token != API_SECRET:
+            abort(403)
+            
     @login_manager.unauthorized_handler
     def unauthorized():
         return jsonify({"error": "Unauthorized"}), 401
