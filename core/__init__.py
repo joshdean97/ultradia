@@ -66,6 +66,9 @@ def create_app(config=None):
     
     @app.before_request
     def verify_origin():
+        if request.method == "OPTIONS":
+            return
+        
         user_agent = request.headers.get("User-Agent", "").lower()
 
         # 🪤 Known scanners and bot agents
