@@ -96,9 +96,9 @@ def create_app(config=None):
             app.logger.warning(f"❌ Blocked by referer: {referer} from {request.remote_addr}")
             abort(403)
 
-        if not IS_DEV and header_token != os.getenv("API_SHARED_SECRET"):
-            app.logger.warning(f"❌ Blocked by secret: {header_token} from {request.remote_addr}")
+        if not IS_DEV and not referer.startswith("https://ultradia.app") and header_token != os.getenv("API_SHARED_SECRET"):
             abort(403)
+
             
          
     @app.after_request
