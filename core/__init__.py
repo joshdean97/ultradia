@@ -119,6 +119,21 @@ def create_app(config=None):
 
         if not IS_DEV and header_token != API_SECRET:
             abort(403)
+         
+        @app.after_request
+        def apply_cors(response):
+            origin = request.headers.get("Origin")
+            allowed = ["https://ultradia.app", "https://www.ultradia.app"]
+            
+            if origin in allowed:
+                response.headers["Access-Control-Allow-Origin"] = origin
+                response.headers["Vary"] = "Origin"
+            
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Ultra-Secret"
+            
+            return response
+
                 
     @login_manager.unauthorized_handler
     def unauthorized():
