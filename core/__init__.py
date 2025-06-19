@@ -47,7 +47,7 @@ def create_app(config=None):
     db.init_app(app)
     migrate.init_app(app, db)
     cors.init_app(app, supports_credentials=True, resources={
-        r"/api/*": {
+        r"/*": {
             "origins": [
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
