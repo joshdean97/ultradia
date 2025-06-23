@@ -87,6 +87,8 @@ class UserCycleEvent(db.Model):
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
 
+    record = db.relationship("UserDailyRecord", backref="events", lazy=True)
+    
     def __repr__(self):
         return f"<UserCycleEvent {self.event_type} {self.start_time}–{self.end_time}>"
 

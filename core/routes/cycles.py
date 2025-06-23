@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from datetime import date
+from datetime import date, datetime
 
 from core.extensions import db
 from core.models import UserDailyRecord, UserCycleEvent
@@ -83,3 +83,34 @@ def add_cycle_event():
     db.session.commit()
 
     return jsonify({"message": "Cycle event added successfully"}), 201
+
+@cycles.route("/<int:event_id>", methods=["PUT"])
+@login_required
+def update_cycle_event(event_id):
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    event = UserCycleEvent.query.get(event_id)
+    if not event:
+        return jsonify({"error": "Event not found"}), 404
+
+    # Manual auth check since no direct record relationship
+    record = UserDailyRecord.query.get(event.user_daily_record_id)
+    if not record or record.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    try:
+        if "start_time" in data:
+            event.start_time = datetime.strptime(data["start_time"], "%H:%M:%S").time()
+        if "end_time" in data:
+            event.end_time = datetime.strptime(data["end_time"], "%H:%M:%S").time()
+        if "event_type" in data:
+            event.event_type = data["event_type"]
+
+        db.session.commit()
+        return jsonify({"message": "Cycle event updated"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
