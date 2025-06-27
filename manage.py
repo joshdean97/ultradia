@@ -6,6 +6,7 @@ from config import DevelopmentConfig
 
 # Only use development config if explicitly told to
 import os
+
 env_config = os.getenv("FLASK_ENV", "production")
 
 if env_config == "development":

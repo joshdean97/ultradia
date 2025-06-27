@@ -4,3 +4,4 @@ from .cycles import cycles
 from .users import users
 from .ultradian import ultradian
 from .vital import vital
+from .vibe_score import vibe_bp

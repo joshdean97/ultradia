@@ -15,6 +15,7 @@ from .routes import (
     users as user_bp,
     ultradian as ultradian_bp,
     vital as vital_bp,
+    vibe_bp,
 )
 
 from datetime import date, datetime, timedelta
@@ -24,13 +25,13 @@ import time
 # if os.getenv("FLASK_ENV") == "development":
 load_dotenv()
 
+
 def create_app(config=None):
     app = Flask(__name__)
-    
+
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_SECURE"] = False
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
-
 
     # Load configuration
     if config is None:
@@ -39,31 +40,35 @@ def create_app(config=None):
         config = DevelopmentConfig
 
     app.config.from_object(config)
-    
+
     print(app.config["RUNNING"])  # Print the running message from Config
     # Initialize extensions
     print("Using DB:", app.config.get("SQLALCHEMY_DATABASE_URI"))
 
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(app, supports_credentials=True, resources={
-        r"/*": {
-            "origins": [
-                "http://localhost:3000",
-                "http://127.0.0.1:3000",
-                "https://ultradia.app"
-            ],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
-        }
-    })    
+    cors.init_app(
+        app,
+        supports_credentials=True,
+        resources={
+            r"/*": {
+                "origins": [
+                    "http://localhost:3000",
+                    "http://127.0.0.1:3000",
+                    "https://ultradia.app",
+                ],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+            }
+        },
+    )
     app.url_map.strict_slashes = False
 
     login_manager = LoginManager()
     login_manager.init_app(app)
-    
+
     API_SECRET = os.getenv("API_SHARED_SECRET")
-    
+
     @app.before_request
     def verify_origin():
         if request.method == "OPTIONS":
@@ -73,7 +78,9 @@ def create_app(config=None):
         honeypot_agents = ["zgrab", "sqlmap", "nmap", "curl", "python-requests"]
 
         if any(bot in user_agent for bot in honeypot_agents):
-            app.logger.warning(f"🕵️ Honeypot tripped by: {user_agent} from {request.remote_addr}")
+            app.logger.warning(
+                f"🕵️ Honeypot tripped by: {user_agent} from {request.remote_addr}"
+            )
             time.sleep(3)
             return "404 Not Found: Nope. Try again, bot 🤖", 404
 
@@ -92,30 +99,37 @@ def create_app(config=None):
                 "http://127.0.0.1:3000",
             ]
 
-        if not isinstance(referer, str) or not any(referer.startswith(origin) for origin in allowed_referers):
-            app.logger.warning(f"❌ Blocked by referer: {referer} from {request.remote_addr}")
+        if not isinstance(referer, str) or not any(
+            referer.startswith(origin) for origin in allowed_referers
+        ):
+            app.logger.warning(
+                f"❌ Blocked by referer: {referer} from {request.remote_addr}"
+            )
             abort(403)
 
-        if not IS_DEV and not referer.startswith("https://ultradia.app") and header_token != os.getenv("API_SHARED_SECRET"):
+        if (
+            not IS_DEV
+            and not referer.startswith("https://ultradia.app")
+            and header_token != os.getenv("API_SHARED_SECRET")
+        ):
             abort(403)
 
-            
-         
     @app.after_request
     def apply_cors(response):
         origin = request.headers.get("Origin")
         allowed = ["https://ultradia.app", "https://www.ultradia.app"]
-        
+
         if origin in allowed:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Vary"] = "Origin"
-        
+
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Ultra-Secret"
-        
+        response.headers["Access-Control-Allow-Headers"] = (
+            "Content-Type, Authorization, X-Ultra-Secret"
+        )
+
         return response
 
-                
     @login_manager.unauthorized_handler
     def unauthorized():
         return jsonify({"error": "Unauthorized"}), 401
@@ -131,6 +145,7 @@ def create_app(config=None):
     app.register_blueprint(user_bp)
     app.register_blueprint(ultradian_bp)
     app.register_blueprint(vital_bp)
+    app.register_blueprint(vibe_bp)
 
     @app.route("/health", methods=["GET"])
     def status():
@@ -144,20 +159,14 @@ def create_app(config=None):
         name = request.json.get("name", "").strip().title()
         ts = datetime.now().isoformat()
 
-        new_lead = Leads(
-            email = email,
-            name = name
-        )
-        
+        new_lead = Leads(email=email, name=name)
+
         db.session.add(new_lead)
         db.session.commit()
-        
-        return jsonify(
-            {
-                "message": "Successfully added",
-                "name": name,
-                "email": email
-            }
-        ), 200
+
+        return (
+            jsonify({"message": "Successfully added", "name": name, "email": email}),
+            200,
+        )
 
     return app
