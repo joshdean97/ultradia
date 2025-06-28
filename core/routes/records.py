@@ -19,6 +19,19 @@ def get_today_record():
     return jsonify({"error": "No record found for today"}), 404
 
 
+@records.route("/all", methods=["GET"])
+@login_required
+def get_all_records():
+    user_id = current_user.id
+    records = (
+        UserDailyRecord.query.filter_by(user_id=user_id)
+        .order_by(UserDailyRecord.date.desc())
+        .all()
+    )
+
+    return jsonify([r.as_dict() for r in records]), 200
+
+
 @records.route("/", methods=["POST", "OPTIONS"], endpoint="create_or_update_record")
 @login_required
 def create_or_update_record():
@@ -65,3 +78,33 @@ def get_today_record_explicit():
     if record:
         return jsonify(record.as_dict()), 200
     return jsonify({"error": "No record found for today"}), 404
+
+
+@records.route("/<int:record_id>/", methods=["PUT", "OPTIONS"])
+@login_required
+def update_record(record_id):
+    if request.method == "OPTIONS":
+        return "", 204  # Allow CORS preflight to pass
+
+    record = UserDailyRecord.query.filter_by(
+        id=record_id, user_id=current_user.id
+    ).first()
+    if not record:
+        return jsonify({"error": "Record not found"}), 404
+
+    data = request.get_json()
+
+    wake_time_str = data.get("wake_time")
+    if wake_time_str:
+        try:
+            record.wake_time = datetime.strptime(wake_time_str, "%H:%M").time()
+        except ValueError:
+            return jsonify({"error": "Invalid time format. Expected HH:MM"}), 400
+
+    # Allow updating these fields
+    for field in ["hrv", "rhr", "sleep_duration", "mood", "session_ended_at"]:
+        if field in data:
+            setattr(record, field, data[field])
+
+    db.session.commit()
+    return jsonify({"message": "Record updated"}), 200
