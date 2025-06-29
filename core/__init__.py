@@ -114,8 +114,10 @@ def create_app(config=None):
             )
             abort(403)
 
+        # ✅ Skip this block for Flask Admin
         if (
             not IS_DEV
+            and not request.path.startswith("/admin")
             and not referer.startswith("https://ultradia.app")
             and header_token != os.getenv("API_SHARED_SECRET")
         ):
