@@ -5,7 +5,7 @@ from datetime import date, datetime
 from core.extensions import db
 from core.models import UserDailyRecord, UserCycleEvent
 
-cycles = Blueprint("cycles", __name__, url_prefix="/cycles")
+cycles = Blueprint("cycles", __name__, url_prefix="/api/cycles")
 
 
 @cycles.route("/", methods=["GET"])
@@ -83,6 +83,7 @@ def add_cycle_event():
     db.session.commit()
 
     return jsonify({"message": "Cycle event added successfully"}), 201
+
 
 @cycles.route("/<int:event_id>", methods=["PUT"])
 @login_required

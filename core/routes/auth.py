@@ -5,7 +5,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from core.extensions import db
 from core.models import User
 
-auth = Blueprint("auth", __name__, url_prefix="/auth")
+auth = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 """
 Blueprint: /auth
@@ -55,9 +55,11 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if user and check_password_hash(user.password_hash, password):
-        session.permanent = True  # 🔥 This keeps the session cookie beyond browser close
+        session.permanent = (
+            True  # 🔥 This keeps the session cookie beyond browser close
+        )
         login_user(user)
-    
+
         return (
             jsonify(
                 {

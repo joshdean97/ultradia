@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from utils.weather import get_weather_data
 
-vibe_bp = Blueprint("vibe", __name__)
+vibe_bp = Blueprint("vibe", __name__, url_prefix="/api")
 
 
 @vibe_bp.route("/vibe-score/", methods=["GET"])

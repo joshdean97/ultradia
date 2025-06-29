@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from ..models import User
 from ..extensions import db
 
-users = Blueprint("users", __name__, url_prefix="/users")
+users = Blueprint("users", __name__, url_prefix="/api/users")
 """
 Blueprint: /api/users
 This module handles user management, including user profile retrieval and updates.

@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from datetime import datetime, date
 from ..models import db, UserDailyRecord
 
-records = Blueprint("records", __name__, url_prefix="/records")
+records = Blueprint("records", __name__, url_prefix="/api/records")
 
 
 @records.route("/", methods=["GET"], endpoint="get_today_record")

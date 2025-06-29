@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, abort
 from flask_login import LoginManager, current_user, login_required
+
+
 from dotenv import load_dotenv
 import csv, pathlib
 import os
@@ -17,6 +19,7 @@ from .routes import (
     vital as vital_bp,
     vibe_bp,
 )
+from .admin import create_admin
 
 from datetime import date, datetime, timedelta
 import requests
@@ -51,11 +54,12 @@ def create_app(config=None):
         app,
         supports_credentials=True,
         resources={
-            r"/*": {
+            r"/api/*": {
                 "origins": [
                     "http://localhost:3000",
                     "http://127.0.0.1:3000",
                     "https://ultradia.app",
+                    "http://localhost:5000",
                 ],
                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
                 "allow_headers": ["Content-Type", "Authorization"],
@@ -72,6 +76,8 @@ def create_app(config=None):
     @app.before_request
     def verify_origin():
         if request.method == "OPTIONS":
+            return
+        if request.path.startswith("/admin"):
             return
 
         user_agent = request.headers.get("User-Agent", "").lower()
@@ -146,6 +152,9 @@ def create_app(config=None):
     app.register_blueprint(ultradian_bp)
     app.register_blueprint(vital_bp)
     app.register_blueprint(vibe_bp)
+
+    # register admin
+    create_admin(app)
 
     @app.route("/health", methods=["GET"])
     def status():
