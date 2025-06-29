@@ -9,10 +9,10 @@ from core.models import User, UserDailyRecord, UserCycleEvent, Leads
 # FLASK ADMIN SETUP
 class SecureModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated and current_user.email == "josh@test.com"
+        return True
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for("auth.login", next=request.url))
+        return "Access denied", 403
 
 
 def create_admin(app):
