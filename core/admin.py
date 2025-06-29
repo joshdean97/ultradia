@@ -12,7 +12,7 @@ class SecureModelView(ModelView):
         return current_user.is_authenticated and current_user.is_admin
 
     def inaccessible_callback(self, name, **kwargs):
-        return "Access denied", 403
+        return redirect(url_for("auth.login", next=request.url))
 
 
 def create_admin(app):
