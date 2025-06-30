@@ -16,6 +16,8 @@ class User(db.Model, UserMixin):
     morning_grog = db.Column(db.Integer, default=30)
     cycles = db.Column(db.Integer, default=3)
 
+    is_admin = db.Column(db.Boolean, default=False)
+
     def latest_record(self):
         return (
             UserDailyRecord.query.filter_by(user_id=self.id)
