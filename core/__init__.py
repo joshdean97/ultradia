@@ -79,7 +79,7 @@ def create_app(config=None):
     def verify_origin():
         if request.method == "OPTIONS":
             return
-        if request.path.startswith(("/admin", "/static", "/health")):
+        if request.path.startswith(("/admin", "/static", "/health", "/temp-login")):
             return
 
         user_agent = request.headers.get("User-Agent", "").lower()
