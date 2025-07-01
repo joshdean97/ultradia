@@ -189,11 +189,15 @@ def create_app(config=None):
             password = request.form.get("password")
 
             user = User.query.filter_by(email=email).first()
+            if not user:
+                return "no user found", 401
 
             if check_password_hash(user.password_hash, password):
                 login_user(user)
+            else:
+                return "Incorrect Password", 401
 
-                return "logged in"
+            return "logged in"
 
         return render_template("temp-login.html")
 
