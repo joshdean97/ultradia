@@ -202,6 +202,11 @@ def create_app(config=None):
             else:
                 return "Incorrect Password", 401
 
+            print("EMAIL:", email)
+            print("USER:", user)
+            print("HASH:", user.password_hash)
+            print("PASS ENTERED:", password)
+
             return "logged in"
 
         return render_template("temp-login.html")
