@@ -99,6 +99,7 @@ def create_app(config=None):
         allowed_referers = [
             "https://ultradia.app",
             "https://www.ultradia.app",
+            "https://api.ultradia.app/temp-login",
         ]
 
         if IS_DEV:
