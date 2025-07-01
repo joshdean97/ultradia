@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify, abort
-from flask_login import LoginManager, current_user, login_required
+from flask import Flask, request, jsonify, abort, render_template
+from flask_login import LoginManager, current_user, login_required, login_user
 
+from werkzeug.security import check_password_hash
 
 from dotenv import load_dotenv
 import csv, pathlib
@@ -180,5 +181,20 @@ def create_app(config=None):
             jsonify({"message": "Successfully added", "name": name, "email": email}),
             200,
         )
+
+    @app.route("/temp-login", methods=["GET", "POST"])
+    def temp_login():
+        if request.method == "POST":
+            email = request.form.get("email")
+            password = request.form.get("password")
+
+            user = User.query.filter_by(email=email).first()
+
+            if check_password_hash(user.password_hash, password=password):
+                login_user(user)
+
+                return "logged in"
+
+        return render_template("temp-login.html")
 
     return app
