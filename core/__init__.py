@@ -190,7 +190,7 @@ def create_app(config=None):
 
             user = User.query.filter_by(email=email).first()
 
-            if check_password_hash(user.password_hash, password=password):
+            if check_password_hash(user.password_hash, password):
                 login_user(user)
 
                 return "logged in"
