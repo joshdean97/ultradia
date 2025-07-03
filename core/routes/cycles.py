@@ -1,5 +1,10 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+    current_user,
+)
 from datetime import date, datetime
 
 from core.extensions import db
@@ -9,7 +14,7 @@ cycles = Blueprint("cycles", __name__, url_prefix="/api/cycles")
 
 
 @cycles.route("/", methods=["GET"])
-@login_required
+@jwt_required()
 def get_all_cycles():
     """Get all cycle events for the current user."""
     records = UserDailyRecord.query.filter_by(user_id=current_user.id).all()
@@ -30,7 +35,7 @@ def get_all_cycles():
 
 
 @cycles.route("/today", methods=["GET"])
-@login_required
+@jwt_required()
 def get_todays_cycles():
     """Get today's cycle events for the current user."""
     today = date.today()
@@ -58,7 +63,7 @@ def get_todays_cycles():
 
 
 @cycles.route("/", methods=["POST"])
-@login_required
+@jwt_required()
 def add_cycle_event():
     """Add a new cycle event to today’s record."""
     data = request.get_json()
@@ -86,7 +91,7 @@ def add_cycle_event():
 
 
 @cycles.route("/<int:event_id>", methods=["PUT"])
-@login_required
+@jwt_required()
 def update_cycle_event(event_id):
     data = request.get_json()
     if not data:

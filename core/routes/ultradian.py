@@ -1,5 +1,10 @@
 from flask import Blueprint, jsonify, request
-from flask_login import login_required, current_user
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+    current_user,
+)
 from datetime import date, datetime
 
 from core.extensions import db
@@ -10,7 +15,7 @@ ultradian = Blueprint("ultradian", __name__, url_prefix="/api/ultradian")
 
 
 @ultradian.route("/", methods=["GET"])
-@login_required
+@jwt_required()
 def get_ultradian_cycles():
     """
     Gets ultradian cycle for either a date specified in the query parameters or today's date if none is provided.
@@ -50,7 +55,7 @@ def get_ultradian_cycles():
 
 
 @ultradian.route("/", methods=["POST", "OPTIONS"])
-@login_required
+@jwt_required()
 def ultradian_cycles():
     today = request.json.get("date", date.today())
     if isinstance(today, str):

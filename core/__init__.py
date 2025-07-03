@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, abort, render_template
-from flask_login import LoginManager, current_user, login_required, login_user
 
 from werkzeug.security import check_password_hash
 
@@ -7,8 +6,9 @@ from dotenv import load_dotenv
 import csv, pathlib
 import os
 
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
-from .extensions import db, migrate, cors
+from .extensions import db, migrate, cors, jwt
 from .functions import generate_ultradian_cycles
 from .models import User, UserDailyRecord, UserCycleEvent, Leads
 from .routes import (
@@ -32,10 +32,6 @@ load_dotenv()
 
 def create_app(config=None):
     app = Flask(__name__)
-
-    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-    app.config["SESSION_COOKIE_SECURE"] = False
-    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
     # Load configuration
     if config is None:
@@ -68,10 +64,14 @@ def create_app(config=None):
             }
         },
     )
-    app.url_map.strict_slashes = False
+    jwt.init_app(app)
 
-    login_manager = LoginManager()
-    login_manager.init_app(app)
+    @jwt.user_lookup_loader
+    def user_lookup_callback(_jwt_header, jwt_data):
+        identity = jwt_data["sub"]
+        return User.query.get(identity)
+
+    app.url_map.strict_slashes = False
 
     API_SECRET = os.getenv("API_SHARED_SECRET")
 
@@ -145,14 +145,6 @@ def create_app(config=None):
 
         return response
 
-    @login_manager.unauthorized_handler
-    def unauthorized():
-        return jsonify({"error": "Unauthorized"}), 401
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
-
     # initialize blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(records_bp)
@@ -198,16 +190,10 @@ def create_app(config=None):
                 return "no user found", 401
 
             if check_password_hash(user.password_hash, password):
-                login_user(user)
+                access_token = access_token = create_access_token(identity=str(user.id))
+                return jsonify({"access_token": access_token, "user_id": user.id})
             else:
                 return "Incorrect Password", 401
-
-            print("EMAIL:", email)
-            print("USER:", user)
-            print("HASH:", user.password_hash)
-            print("PASS ENTERED:", password)
-
-            return "logged in"
 
         return render_template("temp-login.html")
 

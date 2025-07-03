@@ -1,5 +1,10 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+    current_user,
+)
 from datetime import datetime, date
 from ..models import db, UserDailyRecord
 
@@ -7,7 +12,7 @@ records = Blueprint("records", __name__, url_prefix="/api/records")
 
 
 @records.route("/", methods=["GET"], endpoint="get_today_record")
-@login_required
+@jwt_required()
 def get_today_record():
     today = date.today()
     record = UserDailyRecord.query.filter_by(
@@ -20,7 +25,7 @@ def get_today_record():
 
 
 @records.route("/all", methods=["GET"])
-@login_required
+@jwt_required()
 def get_all_records():
     user_id = current_user.id
     records = (
@@ -33,7 +38,7 @@ def get_all_records():
 
 
 @records.route("/", methods=["POST", "OPTIONS"], endpoint="create_or_update_record")
-@login_required
+@jwt_required()
 def create_or_update_record():
     if request.method == "OPTIONS":
         return jsonify({"message": "CORS preflight"}), 200
@@ -68,7 +73,7 @@ def create_or_update_record():
 
 
 @records.route("/today", methods=["GET"], endpoint="get_today_record_explicit")
-@login_required
+@jwt_required()
 def get_today_record_explicit():
     today = date.today()
     record = UserDailyRecord.query.filter_by(
@@ -81,7 +86,7 @@ def get_today_record_explicit():
 
 
 @records.route("/<int:record_id>/", methods=["PUT", "OPTIONS"])
-@login_required
+@jwt_required()
 def update_record(record_id):
     if request.method == "OPTIONS":
         return "", 204  # Allow CORS preflight to pass

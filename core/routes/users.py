@@ -1,5 +1,10 @@
 from flask import Blueprint, jsonify, request
-from flask_login import current_user, login_required
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+    current_user,
+)
 
 from ..models import User
 from ..extensions import db
@@ -16,7 +21,7 @@ These endpoints are essential for managing user information and preferences.
 
 
 @users.route("/me", methods=["GET"])
-@login_required
+@jwt_required()
 def get_user_profile():
     """
     Retrieve the current user's profile.
@@ -72,7 +77,7 @@ def get_user_profile_by_id(user_id):
 
 
 @users.route("/me", methods=["PUT"])
-@login_required
+@jwt_required()
 def update_user_profile():
     """
     Update the current user's profile.
@@ -98,7 +103,7 @@ def update_user_profile():
 
 
 @users.route("/me", methods=["DELETE"])
-@login_required
+@jwt_required()
 def delete_user_profile():
     """
     Delete the current user's profile.
@@ -114,7 +119,7 @@ def delete_user_profile():
 
 
 @users.route("/<int:user_id>", methods=["PUT"])
-@login_required
+@jwt_required()
 def update_user(user_id):
     user = User.query.get(user_id)
 

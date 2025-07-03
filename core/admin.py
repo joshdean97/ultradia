@@ -1,8 +1,8 @@
 from flask import redirect, url_for, request
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-from flask_login import current_user
 from core.extensions import db
+from flask_jwt_extended import current_user
 from core.models import User, UserDailyRecord, UserCycleEvent, Leads
 
 

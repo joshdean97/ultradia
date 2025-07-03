@@ -1,12 +1,17 @@
 from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+    current_user,
+)
 from utils.weather import get_weather_data
 
 vibe_bp = Blueprint("vibe", __name__, url_prefix="/api")
 
 
 @vibe_bp.route("/vibe-score/", methods=["GET"])
-@login_required
+@jwt_required()
 def get_vibe_score():
     penalties = []
     score = 100
@@ -66,8 +71,11 @@ def get_vibe_score():
         penalties.append("Sweat evaporation impacted")
 
     # --- SLEEP ---
-    if data_point["sleep"] < 6:
+    if data_point["sleep"] < 5:
         score -= 8
+        penalties.append("Sleep deprivation")
+    elif data_point["sleep"] < 7:
+        score -= 4
         penalties.append("Sleep debt")
     elif data_point["sleep"] > 9.5:
         score -= 3
@@ -75,10 +83,10 @@ def get_vibe_score():
 
     # --- BIO STATS ---
     hrv_dev = (data_point["hrv"] - baseline_values["hrv"]) / baseline_values["hrv"]
-    if hrv_dev < -0.15:
+    if hrv_dev < -0.10:
         score -= 10
         penalties.append("HRV drop >15%: stress")
-    elif hrv_dev < -0.07:
+    elif hrv_dev < -0.04:
         score -= 5
         penalties.append("HRV drop >7%: early strain")
     elif hrv_dev > 0.25:

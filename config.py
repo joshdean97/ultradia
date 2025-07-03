@@ -13,23 +13,28 @@ class Config:
     # Debug flag
     RUNNING = "Base Config is running"
 
+    # JWT
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "Shhhhdonttell")
+
 
 class DevelopmentConfig(Config):
     """Development configuration class."""
+
     SECRET_KEY = os.getenv("SECRET_KEY", "jdifhidhf")
 
     DEBUG = True
     FLASK_ENV = "development"
     SQLALCHEMY_DATABASE_URI = os.getenv("DB_URI", "sqlite:///dev_site.db")
     RUNNING = "Development Config is running"
-    URL=os.environ.get('DEV_URL')
+    URL = os.environ.get("DEV_URL")
 
 
 class ProductionConfig(Config):
     """Production configuration class."""
+
     SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_APP = "application.py"
-    FLASK_ENV= "development"
+    FLASK_ENV = "development"
 
     SQLALCHEMY_DATABASE_URI = os.getenv("PROD_DB_URI")
     if not SQLALCHEMY_DATABASE_URI:
