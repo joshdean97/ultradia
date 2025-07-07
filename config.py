@@ -28,6 +28,9 @@ class DevelopmentConfig(Config):
     RUNNING = "Development Config is running"
     URL = os.environ.get("DEV_URL")
 
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
 
 class ProductionConfig(Config):
     """Production configuration class."""

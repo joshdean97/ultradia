@@ -21,6 +21,7 @@ from .routes import (
     vibe_bp,
 )
 from .admin import create_admin
+from core.routes.auth import oauth
 
 from datetime import date, datetime, timedelta
 import requests
@@ -65,6 +66,7 @@ def create_app(config=None):
         },
     )
     jwt.init_app(app)
+    oauth.init_app(app)
 
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
@@ -74,12 +76,15 @@ def create_app(config=None):
     app.url_map.strict_slashes = False
 
     API_SECRET = os.getenv("API_SHARED_SECRET")
+    print("Google Client ID:", os.getenv("GOOGLE_CLIENT_ID"))
 
     @app.before_request
     def verify_origin():
         if request.method == "OPTIONS":
             return
-        if request.path.startswith(("/admin", "/static", "/health", "/temp")):
+        if request.path.startswith(
+            ("/admin", "/static", "/health", "/temp", "api/auth/login/google")
+        ):
             return
 
         user_agent = request.headers.get("User-Agent", "").lower()
@@ -106,15 +111,17 @@ def create_app(config=None):
             allowed_referers += [
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
+                "http://localhost:5000",
+                "http://127.0.0.1:5000",
             ]
-
-        if not isinstance(referer, str) or not any(
-            referer.startswith(origin) for origin in allowed_referers
-        ):
-            app.logger.warning(
-                f"❌ Blocked by referer: {referer} from {request.remote_addr}"
-            )
-            abort(403)
+        else:
+            if not isinstance(referer, str) or not any(
+                referer.startswith(origin) for origin in allowed_referers
+            ):
+                app.logger.warning(
+                    f"❌ Blocked by referer: {referer} from {request.remote_addr}"
+                )
+                abort(403)
 
         # ✅ Skip this block for Flask Admin
         if not IS_DEV:
