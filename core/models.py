@@ -115,6 +115,7 @@ class UserDailyRecord(db.Model):
     rhr = db.Column(db.Integer)
     sleep_duration = db.Column(db.Float)
     mood = db.Column(db.String, nullable=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
 
     # cycle_events = db.relationship(
     #     "UserCycleEvent",

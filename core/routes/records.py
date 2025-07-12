@@ -113,3 +113,21 @@ def update_record(record_id):
 
     db.session.commit()
     return jsonify({"message": "Record updated"}), 200
+
+
+@records.route("/records/<int:record_id>", methods=["PUT"])
+@jwt_required()
+def end_daily_record(record_id):
+    record = UserDailyRecord.query.get(record_id)
+
+    if not record or record.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized or not found"}), 403
+
+    data = request.get_json()
+    try:
+        record.ended_at = datetime.fromisoformat(data["ended_at"])
+        db.session.commit()
+        return jsonify({"message": "Record ended"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500

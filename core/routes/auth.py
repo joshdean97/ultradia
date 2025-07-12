@@ -126,13 +126,6 @@ def google_callback():
 
     access_token = create_access_token(identity=str(user.id))
 
-    return (
-        jsonify(
-            {
-                "access_token": access_token,
-                "user_id": user.id,
-                "message": f"Logged in as {user.name} via Google",
-            }
-        ),
-        200,
+    return redirect(
+        f"http://localhost:3000/auth/callback?token={access_token}&user_id={user.id}&name={user.name}"
     )

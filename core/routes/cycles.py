@@ -67,9 +67,18 @@ def get_todays_cycles():
 def add_cycle_event():
     """Add a new cycle event to today’s record."""
     data = request.get_json()
+    from datetime import datetime
+
+    start_time = datetime.strptime(data.get("start_time"), "%H:%M:%S").time()
+    try:
+        start_time = datetime.strptime(data.get("start_time"), "%H:%M:%S").time()
+        end_time = datetime.strptime(data.get("end_time"), "%H:%M:%S").time()
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid or missing time format. Use HH:MM:SS"}), 400
+
     event_type = data.get("event_type")
-    start_time = data.get("start_time")
-    end_time = data.get("end_time")
+    if event_type not in ["peak", "trough"]:
+        return jsonify({"error": "Invalid event type"}), 400
 
     today = date.today()
     record = UserDailyRecord.query.filter_by(
