@@ -139,7 +139,12 @@ def create_app(config=None):
     @app.after_request
     def apply_cors(response):
         origin = request.headers.get("Origin")
-        allowed = ["https://ultradia.app", "https://www.ultradia.app"]
+        allowed = [
+            "https://ultradia.app",
+            "https://www.ultradia.app",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
 
         if origin in allowed:
             response.headers["Access-Control-Allow-Origin"] = origin
