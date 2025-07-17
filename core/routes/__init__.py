@@ -5,3 +5,5 @@ from .users import users
 from .ultradian import ultradian
 from .vital import vital
 from .vibe_score import vibe_bp
+from .analytics import analytics_bp
+from .admin import admin_bp

@@ -158,3 +158,22 @@ class Leads(db.Model):
     email = db.Column(db.String(120), unique=True)
     name = db.Column(db.String(120))
     timestamp = db.Column(db.DateTime, default=datetime.now())
+
+
+class AnalyticsEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    event = db.Column(db.String(100), nullable=False)
+    meta = db.Column(db.JSON)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref="analytics_events")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "event": self.event,
+            "meta": self.meta,
+            "timestamp": self.timestamp.isoformat(),
+        }

@@ -83,6 +83,8 @@ def update_user_profile():
     Update the current user's profile.
     This endpoint should allow users to update their details such as name, email, and any other relevant information.
     """
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight"}), 200
 
     user = User.query.get(current_user.id)
     if not user:

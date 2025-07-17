@@ -19,8 +19,9 @@ from .routes import (
     ultradian as ultradian_bp,
     vital as vital_bp,
     vibe_bp,
+    analytics_bp,
+    admin_bp,
 )
-from .admin import create_admin
 from core.routes.auth import oauth
 
 from datetime import date, datetime, timedelta
@@ -150,7 +151,10 @@ def create_app(config=None):
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Vary"] = "Origin"
 
-        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Access-Control-Allow-Methods"] = (
+            "GET, POST, PUT, DELETE, OPTIONS"
+        )
+
         response.headers["Access-Control-Allow-Headers"] = (
             "Content-Type, Authorization, X-Ultra-Secret"
         )
@@ -165,9 +169,8 @@ def create_app(config=None):
     app.register_blueprint(ultradian_bp)
     app.register_blueprint(vital_bp)
     app.register_blueprint(vibe_bp)
-
-    # register admin
-    create_admin(app)
+    app.register_blueprint(analytics_bp)
+    app.register_blueprint(admin_bp)
 
     @app.route("/health", methods=["GET"])
     def status():
